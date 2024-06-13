@@ -520,7 +520,6 @@ class FreeplayState extends MusicBeatState {
 		
 		curSelectedFloat = curSelected;
 		changeSong(0);
-		changeDiff(0);
 		
 		camSong.scroll.x = FlxMath.lerp(-(curSelected) * 20 * 0.75, camSong.scroll.x, 0);
 		camSong.scroll.y = FlxMath.lerp((curSelected) * 75 * 0.75, camSong.scroll.y, 0);
@@ -554,11 +553,9 @@ class FreeplayState extends MusicBeatState {
 				
 				if (controls.UI_DOWN_P) {
 					changeSong(1);
-					changeDiff(0);
 					curSelectedFloat = curSelected;
 				} else if (controls.UI_UP_P) {
 					changeSong(-1);
-					changeDiff(0);
 					curSelectedFloat = curSelected;
 				}
 			}
@@ -1461,6 +1458,12 @@ class FreeplayState extends MusicBeatState {
 			curDifficulty = 0;
 		}
 		
+		var newPos:Int = CoolUtil.difficulties.indexOf(lastDifficultyName);
+		if(newPos > -1)
+		{
+			curDifficulty = newPos;
+		}
+		
 		bgCheck();
 		changeDiff();
 		
@@ -1480,7 +1483,7 @@ class FreeplayState extends MusicBeatState {
 		songIcon.updateHitbox();
 	}
 	
-	function changeDiff(value:Int)
+	function changeDiff(value:Int = 0)
 	{
 		curDifficulty += value;
 		if (curDifficulty < 0)
