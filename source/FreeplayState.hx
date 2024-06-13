@@ -229,10 +229,12 @@ class FreeplayState extends MusicBeatState {
 		addSongTxt();	
 		
 		bg.color = songs[curSelected].color;
+		/*
 		if(lastDifficultyName == '')
 		{
 			lastDifficultyName = CoolUtil.defaultDifficulty;
 		}
+		*/
 		curDifficulty = Math.round(Math.max(0, CoolUtil.defaultDifficulties.indexOf(lastDifficultyName)));
 		
 		camSong.scroll.x = -curSelected * 20 * 0.75;
@@ -1547,7 +1549,8 @@ class FreeplayState extends MusicBeatState {
 	function updateInfoText()
 	{		
 		try {
-		difficultyText.text = CoolUtil.difficulties[curDifficulty];
+		lastDifficultyName = CoolUtil.difficulties[curDifficulty];
+		difficultyText.text = lastDifficultyName.toUpperCase();
 		difficultyText.x = (820 - difficultyText.width) / 2;
 		if (difficultyText.width > 300)
 			difficultyText.scale.set(300/difficultyText.width, 300/difficultyText.width);
