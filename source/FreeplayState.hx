@@ -1229,7 +1229,7 @@ class FreeplayState extends MusicBeatState {
     
     			PlayState.SONG = Song.loadFromJson(poop, songLowercase);
     			PlayState.isStoryMode = false;
-    			PlayState.storyDifficulty = CoolUtil.difficulties[curDifficulty];
+    			PlayState.storyDifficulty = curDifficulty;
     
     			trace('CURRENT WEEK: ' + WeekData.getWeekFileName());
     			if(colorTween != null) {
