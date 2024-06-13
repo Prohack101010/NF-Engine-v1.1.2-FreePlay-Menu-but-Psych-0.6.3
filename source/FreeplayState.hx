@@ -59,8 +59,8 @@ import options.OptionsState;
 	
 	比暂停界面更屎的state出现了XD
 	这个玩意铁锅拖了3个月
-*/
-
+*/    
+   
 class FreeplayState extends MusicBeatState {
 
 	var bg:FlxSprite;
@@ -234,6 +234,7 @@ class FreeplayState extends MusicBeatState {
 			lastDifficultyName = CoolUtil.defaultDifficulty;
 		}
 		curDifficulty = Math.round(Math.max(0, CoolUtil.defaultDifficulties.indexOf(lastDifficultyName)));
+		
 		camSong.scroll.x = -curSelected * 20 * 0.75;
 		
 		songBarSelected = new FlxSprite().loadGraphic(Paths.image(filePath + 'songBarSelected'));
@@ -825,17 +826,11 @@ class FreeplayState extends MusicBeatState {
 			vocals.persist = true;
 			vocals.looped = true;
 		}
-		else
+		else if (vocals != null)
 		{
-			vocals = new FlxSound();
-
-		    FlxG.sound.list.add(vocals);
-    		FlxG.sound.playMusic(Paths.inst(PlayState.SONG.song), 0.7);
-    		vocals.play();
-    		vocals.persist = true;
-    		vocals.looped = true;
-    		vocals.volume = 0.7;
-	    	instPlaying = curSelected;
+			vocals.stop();
+			vocals.destroy();
+			vocals = null;
 		}
 	
 		if (play) {
@@ -1021,11 +1016,11 @@ class FreeplayState extends MusicBeatState {
 	}
 	
 	public static function destroyFreeplayVocals() {
-		if(vocals != null) {
-			vocals.stop();
-			vocals.destroy();
+		if(FreeplayState.vocals != null) {
+			FreeplayState.vocals.stop();
+			FreeplayState.vocals.destroy();
 		}
-		vocals = null;
+		FreeplayState.vocals = null;
 	}
 	
 	function closeListenMenu() {
@@ -1225,45 +1220,24 @@ class FreeplayState extends MusicBeatState {
 		
 		if (FlxG.mouse.justReleased || controls.ACCEPT || controls.BACK) {
 			if ((selectedThing == 'start' && FlxG.pixelPerfectOverlap(startButton, mousechecker, 25)) || controls.ACCEPT) {
-				var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
-				var poop:String = Highscore.formatSong(songLowercase, curDifficulty);
-				try
-				{
-					persistentUpdate = false;
-        			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
-        			var poop:String = Highscore.formatSong(songLowercase, curDifficulty);
-        			trace(poop);
-        
-        			PlayState.SONG = Song.loadFromJson(poop, songLowercase);
-        			PlayState.isStoryMode = false;
-        			PlayState.storyDifficulty = curDifficulty;
-        
-        			trace('CURRENT WEEK: ' + WeekData.getWeekFileName());
-        			if(colorTween != null) {
-        				colorTween.cancel();
-        			}
-        			
-        			LoadingState.loadAndSwitchState(new PlayState());
-        
-        			FlxG.sound.music.volume = 0;
-        					
-        			destroyFreeplayVocals();
-					
-					FlxG.sound.play(Paths.sound('confirmMenu'));
-				}
-				catch(e:Dynamic)
-				{
-					FlxG.sound.play(Paths.sound('cancelMenu'));
-		
-					return;
-				}
-			    destroyFreeplayVocals();
-				LoadingState.loadAndSwitchState(new PlayState());
-				FlxG.mouse.visible = false;
-		
-				//FlxG.sound.music.volume = 0;
-					
-				//destroyFreeplayVocals();
+				persistentUpdate = false;
+    			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
+    			var poop:String = Highscore.formatSong(songLowercase, curDifficulty);
+    			trace(poop);
+    
+    			PlayState.SONG = Song.loadFromJson(poop, songLowercase);
+    			PlayState.isStoryMode = false;
+    			PlayState.storyDifficulty = curDifficulty;
+    
+    			trace('CURRENT WEEK: ' + WeekData.getWeekFileName());
+    			if(colorTween != null) {
+    				colorTween.cancel();
+    			}
+    			LoadingState.loadAndSwitchState(new PlayState());
+    
+    			FlxG.sound.music.volume = 0;
+    					
+    			destroyFreeplayVocals();
 				buttonControl = false;
 			} else if ((selectedThing == 'back' && FlxG.pixelPerfectOverlap(backButton, mousechecker, 25)) || controls.BACK) {
 				if (searching) {closeSearchMenu(); backText.text = 'EXIT'; return;}
@@ -1429,7 +1403,7 @@ class FreeplayState extends MusicBeatState {
 		
 		CoolUtil.difficulties = CoolUtil.defaultDifficulties.copy();
 		var diffStr:String = WeekData.getCurrentWeek().difficulties;
-
+		
 		if(diffStr != null && diffStr.length > 0)
 		{
 			var diffs:Array<String> = diffStr.split(',');
@@ -1483,6 +1457,29 @@ class FreeplayState extends MusicBeatState {
 		songIcon.updateHitbox();
 	}
 	
+	/*
+	function changeDiff(change:Int = 0)
+	{
+		curDifficulty += change;
+
+		if (curDifficulty < 0)
+			curDifficulty = CoolUtil.difficulties.length-1;
+		if (curDifficulty >= CoolUtil.difficulties.length)
+			curDifficulty = 0;
+
+		lastDifficultyName = CoolUtil.difficulties[curDifficulty];
+
+		#if !switch
+		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
+		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty);
+		#end
+
+		PlayState.storyDifficulty = curDifficulty;
+		diffText.text = '< ' + CoolUtil.difficultyString() + ' >';
+		positionHighscore();
+	}
+	*/
+	
 	function changeDiff(value:Int = 0)
 	{
 		curDifficulty += value;
@@ -1490,33 +1487,62 @@ class FreeplayState extends MusicBeatState {
 			curDifficulty = CoolUtil.difficulties.length-1;
 		if (curDifficulty > CoolUtil.difficulties.length - 1)
 			curDifficulty = 0;
-		/*
-		curDifficulty += value;
-		if (curDifficulty < 0)
-			curDifficulty = CoolUtil.difficulties.length-1;
-		if (curDifficulty >= CoolUtil.difficulties.length)
-			curDifficulty = 0;
-		*/
 		var rate:Float = 0;
+		
+		var song = songs[curSelected].songName.toLowerCase();
+		var poop:String = Highscore.formatSong(song, curDifficulty);
 		
 		Paths.currentModDirectory = songs[curSelected].folder;
 		PlayState.storyWeek = songs[curSelected].week;
-				
+		
+		/*
+		THIS IS USELESS
 		try {
 			var song = songs[curSelected].songName.toLowerCase();
 			if (Paths.fileExists('data/' + Paths.formatToSongPath(song) + '/' + Paths.formatToSongPath(song) + CoolUtil.getDifficultyFilePath(curDifficulty)+'.json', TEXT)) {
 				var poop:String = Highscore.formatSong(song, curDifficulty);
+				//rate = DiffCalc.CalculateDiff(Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase())) / 4;
 			}
 		} catch(e:Dynamic) {
+			rate = -1;
+			songNameText.text = 'ERROR';
+		}
+		*/
+		
+		PlayState.storyDifficulty = curDifficulty;
+		//rateCheck(rate);
+		updateInfoText();
+	}
+	
+	/*
+	function changeDiff(value:Int)
+	{
+		curDifficulty += value;
+		if (curDifficulty < 0)
+			curDifficulty = Difficulty.list.length-1;
+		if (curDifficulty > Difficulty.list.length - 1)
+			curDifficulty = 0;
+		var rate:Float = 0;
+		
+		try {
+			var song = songs[curSelected].songName.toLowerCase();
+			if (Paths.fileExists('data/' + Paths.formatToSongPath(song) + '/' + Paths.formatToSongPath(song) + Difficulty.getFilePath(curDifficulty)+'.json', TEXT)) {
+				var poop:String = Highscore.formatSong(song, curDifficulty);
+				rate = DiffCalc.CalculateDiff(Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase())) / 4;
+			}
+		} catch(e:Dynamic) {
+			rate = -1;
 			songNameText.text = 'ERROR';
 		}
 		
+		rateCheck(rate);
 		updateInfoText();
 	}
-		
+	*/
+	
 	function updateInfoText()
 	{		
-		try {		
+		try {
 		lastDifficultyName = CoolUtil.difficulties[curDifficulty];
 		difficultyText.text = lastDifficultyName.toUpperCase();
 		difficultyText.x = (820 - difficultyText.width) / 2;
@@ -1543,6 +1569,7 @@ class FreeplayState extends MusicBeatState {
 			accText.updateHitbox();
 		}
 			
+		// timeText.text = Highscore.getTime(songs[curSelected].songName, curDifficulty);
 		} catch(e:Dynamic) {
 			songNameText.text = 'ERROR';
 		}
@@ -1692,6 +1719,37 @@ class FreeplayState extends MusicBeatState {
 	}
 	
 	var saveVar:Float = 0;
+	function rateCheck(Rate:Float = 0)
+	{
+		rateText.text = Std.string(Math.floor(Rate*100)/100);
+		if (rateText.width*0.9 > 65) rateText.scale.x = 65/rateText.width*0.9;
+		else rateText.scale.x = 0.9;
+		rateText.updateHitbox();
+		
+		if (Rate == -1) {rateText.text = 'RATE ERROR'; return;}
+		if (Rate > 20) Rate = 20;
+		var showWidth = 0;
+		
+		if (timerTween != null){
+			saveVar = swagRect.width;
+			timerTween.cancel();
+		}
+		timerTween = new FlxTimer().start(0.0001, function(tmr:FlxTimer) {
+			showWidth++;
+			swagRect = rate.clipRect;
+			if(swagRect == null) swagRect = new FlxRect(0, 0, 0, 0);
+			swagRect.x = 0;
+			swagRect.y = 0;
+			swagRect.width = saveVar + (rate.width * (Rate / 20) - saveVar) * showWidth / 20;
+			swagRect.height = rate.height;
+			rate.clipRect = swagRect;
+			
+			if (showWidth == 20){ 
+				tmr.cancel();
+				saveVar = swagRect.width;
+			}
+		}, 0);
+	}
 }
 
 class SongMetadata
@@ -1717,3 +1775,71 @@ class SongMetadata
 		if(this.folder == null) this.folder = '';
 	}
 }
+/*
+class songButton extend FlxSpriteGroup
+{
+    var bg:FlxSprite = new FlxSprite();
+    var shape:Shape = new Shape();     
+        
+    public function new(X:Int ,Y:Int, Width:Int, Height:Int)
+    {
+        X = this.x;
+        Y = this.y;
+        
+        bg = new FlxSprite().makeGraphic(Width, Height, FlxColor.BLACK);;
+        shape = new Shape();              
+        
+        var BitmapData:BitmapData = new BitmapData(Width, Height, 0x00FFFFFF);
+        BitmapData.fromFile(Paths.image(filePath + 'songBarShadow'));
+        BitmapData.draw(shape);   
+        
+        var BitmapData:BitmapData = new BitmapData(Width, Height, 0x00FFFFFF);
+        BitmapData.fromFile(Paths.image(filePath + 'songBar'));
+        BitmapData.draw(shape);   
+        
+        var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
+        var BitmapData:BitmapData = new BitmapData(Width, Height, 0x00FFFFFF);;
+        BitmapData.copyPixels(icon.pixels, icon.rect, new Point(100, 100));
+    }
+    
+	    var songText = new FlxText(750 - i*20 * 0.75, i*75 * 0.75 + 355, 0, songs[i].songName, 30);
+			songText.setFormat(font, 30, FlxColor.WHITE, LEFT);
+			songText.camera = camSong;
+			var length = 400;
+			if (songText.width > length) songText.scale.x =  length / songText.width;
+			songText.offset.x += songText.width * (1 -songText.scale.x) / 2;
+			songtextsGroup.push(songText);
+			
+			Paths.currentModDirectory = songs[i].folder;
+			
+			var barShadow:FlxSprite = new FlxSprite().loadGraphic(Paths.image(filePath + 'songBarShadow'));
+			add(barShadow);
+			barShadow.camera = camSong;
+			barShadow.scale.set(1, 1);
+			barShadow.x = songText.x - 750;
+			barShadow.y = songText.y -300;
+			barShadow.updateHitbox();
+			barShadow.color = songs[i].color;
+			barsArray.push(barShadow);
+		    
+			var bar:FlxSprite = new FlxSprite().loadGraphic(Paths.image(filePath + 'songBar'));
+			add(bar);
+			bar.camera = camSong;
+			bar.scale.set(1, 1);
+			bar.x = songText.x - 750;
+			bar.y = songText.y - 300;
+			bar.updateHitbox();
+			barsArray.push(bar);
+			
+			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
+			add(icon);
+			icon.scale.set(0.35, 0.35);
+			icon.camera = camSong;
+			icon.x = songText.x + 370;
+			icon.y = songText.y + songText.height / 2 - icon.height / 2;
+			icon.updateHitbox();
+			icon.scrollFactor.set(1,1);
+			iconsArray.push(icon);						
+			
+			add(songText);			
+}*/
