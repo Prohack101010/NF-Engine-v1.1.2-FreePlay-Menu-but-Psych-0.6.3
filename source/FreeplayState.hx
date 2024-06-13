@@ -1445,6 +1445,12 @@ class FreeplayState extends MusicBeatState {
 			curDifficulty = 0;
 		}
 		
+		var newPos:Int = CoolUtil.difficulties.indexOf(lastDifficultyName);
+		if(newPos > -1)
+		{
+			curDifficulty = newPos;
+		}
+		
 		bgCheck();
 		changeDiff();
 		
@@ -1507,6 +1513,7 @@ class FreeplayState extends MusicBeatState {
 			songNameText.text = 'ERROR';
 		}
 		
+		PlayState.storyDifficulty = curDifficulty;
 		//rateCheck(rate);
 		updateInfoText();
 	}
