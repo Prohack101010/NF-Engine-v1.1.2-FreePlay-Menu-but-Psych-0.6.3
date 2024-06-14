@@ -1463,7 +1463,7 @@ class FreeplayState extends MusicBeatState {
 		Paths.currentModDirectory = songs[curSelected].folder;
 		PlayState.storyWeek = songs[curSelected].week;
 		
-		THIS IS USELESS
+		//THIS IS USELESS
 		try {
 			var song = songs[curSelected].songName.toLowerCase();
 			if (Paths.fileExists('data/' + Paths.formatToSongPath(song) + '/' + Paths.formatToSongPath(song) + CoolUtil.getDifficultyFilePath(curDifficulty)+'.json', TEXT)) {
