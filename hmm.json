@@ -45,11 +45,6 @@
       "url": "https://github.com/PsychPorting/hxCodec-0.6.3.git"
     },
     {
-      "name": "tjson",
-      "type": "haxelib",
-      "version": null
-    },
-    {
       "name": "hxcpp",
       "type": "git",
       "ref": "master",
